@@ -1,0 +1,13 @@
+bugprone-*
+clang-analyzer-*
+cppcoreguidelines-*
+google-*
+llvm-*
+misc-*
+modernize-*
+performance-*
+portability-*
+readability-*
+
+-modernize-use-trailing-return-type
+-llvm-header-guard
