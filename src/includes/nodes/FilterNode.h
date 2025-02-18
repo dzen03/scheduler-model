@@ -14,12 +14,26 @@ class FilterNode : public Node {
   explicit FilterNode(double filter = 1) : filter_(filter) {}
 
   double GetOutputVolume() override { return filter_ * GetInputVolume(); }
-  Stats GetUsage() override { return GetUsage(true); }
-  Stats GetUsage(bool need_network) override {
-    return Stats(
-        {.cpu = cpu_usage_multiplier_ * GetInputVolume(),
-         .memory = GetInputVolume(),
-         .network = (need_network ? GetInputVolume() + GetOutputVolume() : 0)});
+  Stats GetUsage() override { return GetUsage(BOTH); }
+  Stats GetUsage(NetworkMode need_network) override {
+    double network_usage = 0;
+    switch (need_network) {
+      case BOTH:
+        network_usage = GetInputVolume() + GetOutputVolume();
+        break;
+      case INPUT:
+        network_usage = GetInputVolume();
+        break;
+      case OUTPUT:
+        network_usage = GetOutputVolume();
+        break;
+      case NONE:
+        break;
+    }
+    return Stats({.cpu = cpu_usage_multiplier_ * GetInputVolume(),
+                  .memory = GetInputVolume(),
+                  .network = network_usage,
+                  .disk = 0});
   }
 
  private:

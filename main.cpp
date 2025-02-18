@@ -9,6 +9,7 @@
 #include "nodes/FilterNode.h"
 #include "nodes/SourceNode.h"
 #include "scheduler/RoundRobin.h"
+// #include "scheduler/SingleHost.h"
 
 // NOLINTBEGIN(readability-magic-numbers)
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
@@ -37,10 +38,12 @@ int main() {
 
     system
         .AddServer(yql_model::Server(
-            Stats({.cpu = 10000, .memory = 8000, .network = 1000})))
+            Stats({.cpu = 10000, .memory = 8000, .network = 100})))
         ->AddServer(yql_model::Server(
-            Stats({.cpu = 20000, .memory = 2000, .network = 100})));
+            Stats({.cpu = 20000, .memory = 2000, .network = 1000})));
 
+    system.ExecuteQuery(graph);
+    system.ExecuteQuery(graph);
     system.ExecuteQuery(graph);
 
     for (const auto& server : system.GetServers()) {

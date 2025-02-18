@@ -10,6 +10,7 @@ namespace yql_model {
 class Node {
  public:
   enum Type : std::uint8_t { SOURCE, FILTER };
+  enum NetworkMode : std::uint8_t { NONE, INPUT, OUTPUT, BOTH };
 
   Node() = default;
   virtual ~Node() = default;
@@ -22,7 +23,7 @@ class Node {
 
   [[nodiscard]] virtual double GetOutputVolume() = 0;
   [[nodiscard]] virtual Stats GetUsage() = 0;
-  [[nodiscard]] virtual Stats GetUsage(bool need_network) = 0;
+  [[nodiscard]] virtual Stats GetUsage(NetworkMode need_network) = 0;
 
   void SetInputVolume(double value) { input_ = value; }
   void AddInputVolume(double value) { SetInputVolume(input_ + value); }

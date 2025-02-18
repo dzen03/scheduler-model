@@ -11,10 +11,11 @@ bool RoundRobin::Schedule(const Graph& graph, std::vector<Server>& servers) {
   for (const auto& node : graph.GetNodes()) {
     bool emplaced = false;
     while (!emplaced) {
-      emplaced = servers[next_server_].EmplaceNode(node, 2);
+      emplaced = servers[next_server_].EmplaceNode(node, Node::BOTH);
 
       if (!emplaced) {
-        if (started_trying_server == next_server_ - 1) {
+        if (started_trying_server != -1 &&
+            started_trying_server == next_server_ - 1) {
           throw std::runtime_error("Cannot emplace node on any server");
         }
         if (started_trying_server == -1) {
@@ -27,7 +28,6 @@ bool RoundRobin::Schedule(const Graph& graph, std::vector<Server>& servers) {
                   << next_server_ << "\n";
         started_trying_server = -1;
       }
-
       next_server_ = (next_server_ + 1) % servers.size();
     }
     ++node_id;

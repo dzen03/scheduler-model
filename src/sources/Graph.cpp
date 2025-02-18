@@ -1,7 +1,9 @@
 #include "Graph.h"
 
 #include <cassert>
+#include <iterator>
 #include <queue>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -60,6 +62,20 @@ void Graph::CalculateThroughput() {
       queue.emplace(child_id);
     }
   }
+}
+
+std::unordered_set<std::size_t> Graph::GetSinks() const {
+  std::unordered_set<std::size_t> res;
+
+  std::size_t node_id = 0;
+  for (const auto& node : adjacency_list_) {
+    if (node.empty()) {
+      res.emplace(node_id);
+    }
+    ++node_id;
+  }
+
+  return res;
 }
 
 }  // namespace yql_model

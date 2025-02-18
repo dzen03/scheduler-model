@@ -1,23 +1,37 @@
 #include "Server.h"
 
-#include <iostream>
+#include <cassert>
 #include <memory>
+#include <vector>
 
 #include "nodes/Node.h"
 
 namespace yql_model {
-bool Server::EmplaceNode(const std::shared_ptr<Node> node, bool need_network) {
+bool Server::EmplaceNode(const std::shared_ptr<Node> node,
+                         Node::NetworkMode need_network) {
   bool res = false;
-
-  // std::cout << usages_.GetCpu() << " " << limits_.GetCpu() << " "
-  //           << node->GetUsage().GetCpu() << "\n"
-  //           << usages_.GetMemory() << " " << limits_.GetMemory() << " "
-  //           << node->GetUsage().GetMemory() << "\n"
-  //           << usages_.GetNetwork() << " " << limits_.GetNetwork() << " "
-  //           << node->GetUsage().GetNetwork() << "\n";
 
   if (usages_ + node->GetUsage(need_network) <= limits_) {
     usages_ = usages_ + node->GetUsage(need_network);
+    res = true;
+  }
+
+  return res;
+}
+
+bool Server::EmplaceNodes(const std::vector<std::shared_ptr<Node>> nodes,
+                          std::vector<Node::NetworkMode> need_networks) {
+  bool res = false;
+
+  assert(nodes.size() == need_networks.size());
+
+  Stats need_usage{};
+  for (int i = 0; i < nodes.size(); ++i) {
+    need_usage = need_usage + nodes[i]->GetUsage(need_networks[i]);
+  }
+
+  if (usages_ + need_usage <= limits_) {
+    usages_ = usages_ + need_usage;
     res = true;
   }
 

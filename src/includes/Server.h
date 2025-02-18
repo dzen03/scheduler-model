@@ -2,6 +2,7 @@
 #define SRC_INCLUDES_SERVER_H_
 
 #include <memory>
+#include <vector>
 
 #include "Stats.h"
 #include "nodes/Node.h"
@@ -22,7 +23,9 @@ class Server {
   [[nodiscard]] auto GetNetworkUsage() const { return usages_.GetNetwork(); }
   [[nodiscard]] auto GetMemoryUsage() const { return usages_.GetMemory(); }
 
-  bool EmplaceNode(std::shared_ptr<Node> node, bool need_network);
+  bool EmplaceNode(std::shared_ptr<Node> node, Node::NetworkMode need_network);
+  bool EmplaceNodes(std::vector<std::shared_ptr<Node>> nodes,
+                    std::vector<Node::NetworkMode> need_networks);
 
  private:
   Stats limits_;
