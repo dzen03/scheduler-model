@@ -1,7 +1,13 @@
 #include "scheduler/SingleHost.h"
 
+#include <cstddef>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
+
+#include "Graph.h"
+#include "Server.h"
+#include "nodes/Node.h"
 
 namespace yql_model {
 bool SingleHost::Schedule(const Graph& graph, std::vector<Server>& servers) {
@@ -20,7 +26,8 @@ bool SingleHost::Schedule(const Graph& graph, std::vector<Server>& servers) {
       networks[node_id] = Node::OUTPUT;
     }
 
-    emplaced = servers[next_server_].EmplaceNodes(graph.GetNodes(), networks);
+    emplaced = servers[next_server_].EmplaceNodes(graph.GetNodes(), networks,
+                                                  next_server_);
 
     if (!emplaced) {
       if (started_trying_server == next_server_ - 1) {
@@ -40,6 +47,13 @@ bool SingleHost::Schedule(const Graph& graph, std::vector<Server>& servers) {
     next_server_ = (next_server_ + 1) % servers.size();
   }
 
+  return true;
+}
+bool SingleHost::Remove(const Graph& graph, std::vector<Server>& servers) {
+  for (const auto& node : graph.GetNodes()) {
+    servers[node->GetServer()].RemoveNode(node->GetNodeId());
+    node->SetServer(-1);
+  }
   return true;
 }
 }  // namespace yql_model

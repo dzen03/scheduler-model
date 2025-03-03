@@ -3,3 +3,6 @@
 build/
 temp/
 notes.md
+data/
+log.txt
+server.log

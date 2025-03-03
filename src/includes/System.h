@@ -1,6 +1,7 @@
 #ifndef SRC_INCLUDES_SYSTEM_H_
 #define SRC_INCLUDES_SYSTEM_H_
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -16,12 +17,25 @@ class System {
       : scheduler_(std::move(scheduler)) {}
   System* AddServer(const Server& server);
 
-  void ExecuteQuery(const Graph& graph);
+  bool ExecuteQuery(const Graph& graph);
+  bool RemoveQuery(std::size_t index);
 
   [[nodiscard]] auto GetServers() const { return servers_; }
+  [[nodiscard]] auto GetServerById(std::size_t ind) const {
+    return servers_[ind];
+  }
+  [[nodiscard]] auto GetGraphs() const { return graphs_; }
+  [[nodiscard]] auto GetGraphById(std::size_t ind) const {
+    return graphs_[ind];
+  }
+  [[nodiscard]] auto GetGraphsSize() const {
+    std::cerr << graphs_.size() << "\n";
+    return graphs_.size();
+  }
 
  private:
   std::vector<Server> servers_;
+  std::vector<Graph> graphs_;
   std::unique_ptr<IScheduler> scheduler_;
 };
 

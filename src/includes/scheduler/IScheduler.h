@@ -23,6 +23,7 @@ class IScheduler {
   IScheduler& operator=(IScheduler&& source) = default;
 
   virtual bool Schedule(const Graph& graph, std::vector<Server>& servers) = 0;
+  virtual bool Remove(const Graph& graph, std::vector<Server>& servers) = 0;
 };
 }  // namespace yql_model
 

@@ -8,7 +8,7 @@ namespace yql_model {
 
 class FilterNode : public Node {
  private:
-  static constexpr double cpu_usage_multiplier_ = 0.5;
+  static constexpr double cpu_usage_multiplier_ = 0.05;
 
  public:
   explicit FilterNode(double filter = 1) : filter_(filter) {}

@@ -1,6 +1,8 @@
 #ifndef SRC_INCLUDES_NODES_INODE_H_
 #define SRC_INCLUDES_NODES_INODE_H_
 
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
 
 #include "Stats.h"
@@ -12,7 +14,7 @@ class Node {
   enum Type : std::uint8_t { SOURCE, FILTER };
   enum NetworkMode : std::uint8_t { NONE, INPUT, OUTPUT, BOTH };
 
-  Node() = default;
+  Node();
   virtual ~Node() = default;
 
   Node(const Node& source) = default;
@@ -30,8 +32,18 @@ class Node {
   void ResetInputVolume() { SetInputVolume(0); }
   [[nodiscard]] auto GetInputVolume() const { return input_; }
 
+  void SetServer(std::size_t server_id) {
+    assert(server_id == std::size_t(-1) || server_id_ == std::size_t(-1));
+    server_id_ = server_id;
+  }
+  [[nodiscard]] auto GetServer() const { return server_id_; }
+
+  [[nodiscard]] auto GetNodeId() const { return node_id_; }
+
  private:
   double input_ = 0;
+  std::size_t server_id_ = -1;
+  std::size_t node_id_;
 };
 
 }  // namespace yql_model

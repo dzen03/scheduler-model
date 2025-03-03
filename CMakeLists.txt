@@ -1,17 +1,23 @@
 cmake_minimum_required(VERSION 3.27)
 project(yql-model)
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # option(BUILD_TESTING "Enable tests" ON)
-add_subdirectory(src)
 
 option(USE_CLANG_TIDY "Enable clang tidy" ON)
 set(CLANG_TIDY_NAME "clang-tidy" CACHE STRING "clang-tidy name/verion")
 if(USE_CLANG_TIDY)
     find_program(CLANG_TIDY "${CLANG_TIDY_NAME}")
 endif()
+
+# find_package(opentelemetry-cpp CONFIG REQUIRED)
+# if(NOT DEFINED prometheus-cpp_VERSION)
+#   message(FATAL_ERROR "prometheus-cpp_VERSION is not defined")
+# endif()
+# message("TEST: " ${prometheus-cpp_INCLUDE_DIR})
+# include_directories(${OPENTELEMETRY_CPP_INCLUDE_DIRS})
 
 if(CLANG_TIDY)
     message(STATUS "Clang-tidy: ${CLANG_TIDY}")
@@ -38,6 +44,11 @@ if(CLANG_TIDY)
     )
 endif()
 
+add_subdirectory(server)
+include_directories(server)
+
+add_subdirectory(src)
+
 add_executable(model main.cpp)
-target_link_libraries(model PRIVATE model-sources)
+target_link_libraries(model PRIVATE model-sources simple-http-server-sources)
 target_compile_options(model PRIVATE -Wall -Wextra -Wpedantic -Werror)

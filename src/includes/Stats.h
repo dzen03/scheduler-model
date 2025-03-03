@@ -1,6 +1,8 @@
 #ifndef SRC_INCLUDE_STATS_H_
 #define SRC_INCLUDE_STATS_H_
 
+#include <sstream>
+#include <string>
 class Stats {
   double cpu_;
   double memory_;
@@ -9,9 +11,9 @@ class Stats {
 
  public:
   struct StatsConstructor {
-    double cpu;
-    double memory;
-    double network;
+    double cpu = 0;
+    double memory = 0;
+    double network = 0;
     double disk = 0;
   };
   Stats() = default;
@@ -31,6 +33,32 @@ class Stats {
                   .memory = lhs.memory_ + rhs.memory_,
                   .network = lhs.network_ + rhs.network_,
                   .disk = lhs.disk_ + rhs.disk_});
+  }
+
+  friend Stats operator-(Stats lhs, const Stats& rhs) {
+    return Stats({.cpu = lhs.cpu_ - rhs.cpu_,
+                  .memory = lhs.memory_ - rhs.memory_,
+                  .network = lhs.network_ - rhs.network_,
+                  .disk = lhs.disk_ - rhs.disk_});
+  }
+
+  [[nodiscard]] std::string ToJSON() const {
+    std::ostringstream res;
+
+    res << '{';
+    for (const auto& stat :
+         std::initializer_list<std::tuple<std::string, double>>{
+             {"cpu", GetCpu()},
+             {"memory", GetMemory()},
+             {"network", GetNetwork()},
+             {"disk", GetDisk()}}) {
+      res << '"' << std::get<0>(stat) << R"(":)" << std::get<1>(stat) << ",";
+    }
+    res.seekp(-1, std::ios_base::cur);
+
+    res << '}';
+
+    return res.str();
   }
 
   // comparing all stats

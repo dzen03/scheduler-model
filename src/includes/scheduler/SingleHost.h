@@ -9,6 +9,7 @@ namespace yql_model {
 class SingleHost : public IScheduler {
  public:
   bool Schedule(const Graph& graph, std::vector<Server>& servers) override;
+  bool Remove(const Graph& graph, std::vector<Server>& servers) override;
 
  private:
   std::size_t next_server_ = 0;

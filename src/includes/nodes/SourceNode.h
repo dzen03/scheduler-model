@@ -8,7 +8,7 @@ namespace yql_model {
 
 class SourceNode : public Node {
  private:
-  static constexpr double cpu_usage_multiplier_ = 0.2;
+  static constexpr double cpu_usage_multiplier_ = 0.02;
 
  public:
   explicit SourceNode(double rate) : rate_(rate) { SetInputVolume(rate); }

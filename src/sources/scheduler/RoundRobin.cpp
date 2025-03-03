@@ -1,7 +1,13 @@
 #include "scheduler/RoundRobin.h"
 
+#include <cstddef>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
+
+#include "Graph.h"
+#include "Server.h"
+#include "nodes/Node.h"
 
 namespace yql_model {
 bool RoundRobin::Schedule(const Graph& graph, std::vector<Server>& servers) {
@@ -11,7 +17,8 @@ bool RoundRobin::Schedule(const Graph& graph, std::vector<Server>& servers) {
   for (const auto& node : graph.GetNodes()) {
     bool emplaced = false;
     while (!emplaced) {
-      emplaced = servers[next_server_].EmplaceNode(node, Node::BOTH);
+      emplaced =
+          servers[next_server_].EmplaceNode(node, Node::BOTH, next_server_);
 
       if (!emplaced) {
         if (started_trying_server != -1 &&
@@ -35,4 +42,13 @@ bool RoundRobin::Schedule(const Graph& graph, std::vector<Server>& servers) {
 
   return true;
 }
+
+bool RoundRobin::Remove(const Graph& graph, std::vector<Server>& servers) {
+  for (const auto& node : graph.GetNodes()) {
+    servers[node->GetServer()].RemoveNode(node->GetNodeId());
+    node->SetServer(-1);
+  }
+  return true;
+}
+
 }  // namespace yql_model
