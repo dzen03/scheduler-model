@@ -3,6 +3,11 @@
 
 #include <sstream>
 #include <string>
+
+#include "Util.h"
+
+namespace yql_model {
+
 class Stats {
   double cpu_;
   double memory_;
@@ -42,7 +47,7 @@ class Stats {
                   .disk = lhs.disk_ - rhs.disk_});
   }
 
-  [[nodiscard]] std::string ToJSON() const {
+  [[nodiscard]] std::string ToJson() const {
     std::ostringstream res;
 
     res << '{';
@@ -61,6 +66,20 @@ class Stats {
     return res.str();
   }
 
+  static Stats Parse(const std::string& inp) {
+    auto delim_pos1 = inp.find(Util::delimeter);
+    auto delim_pos2 = inp.find(Util::delimeter, delim_pos1 + 1);
+    auto delim_pos3 = inp.find(Util::delimeter, delim_pos2 + 1);
+    return Stats(StatsConstructor{
+        .cpu = Util::ParseValue<double>(inp.substr(0, delim_pos1)),
+        .memory = Util::ParseValue<double>(
+            inp.substr(delim_pos1 + 1, delim_pos2 - delim_pos1 - 1)),
+        .network = Util::ParseValue<double>(
+            inp.substr(delim_pos2 + 1, delim_pos3 - delim_pos2 - 1)),
+        .disk = Util::ParseValue<double>(
+            inp.substr(delim_pos3 + 1, std::string::npos))});
+  }
+
   // comparing all stats
   bool operator<<=(const Stats& rhs) const {
     return cpu_ <= rhs.cpu_ && memory_ <= rhs.memory_ &&
@@ -75,5 +94,6 @@ class Stats {
   //          network_ == rhs.network_ && ;
   // }
 };
+}  // namespace yql_model
 
 #endif  // SRC_INCLUDE_STATS_H_

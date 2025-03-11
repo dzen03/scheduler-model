@@ -33,6 +33,11 @@ class System {
     return graphs_.size();
   }
 
+  void Reset() {
+    servers_.clear();
+    graphs_.clear();
+  }
+
  private:
   std::vector<Server> servers_;
   std::vector<Graph> graphs_;

@@ -11,3 +11,4 @@ readability-*
 
 -modernize-use-trailing-return-type
 -llvm-header-guard
+-cppcoreguidelines-avoid-magic-number

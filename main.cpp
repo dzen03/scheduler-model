@@ -16,6 +16,8 @@
 
 #include "Directory.h"
 #include "Graph.h"
+#include "Parameters.h"
+#include "Response.h"
 #include "Server.h"
 #include "Stats.h"
 #include "System.h"
@@ -31,13 +33,18 @@
 // NOLINTBEGIN(readability-magic-numbers)
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 namespace {
+
+yql_model::Parameters params{};  // NOLINT
+
 yql_model::Graph GenerateGraph() {
   std::random_device rand;
   std::mt19937 gen(rand());
-  std::uniform_int_distribution<> int_size(2, 30);
-  std::uniform_int_distribution<> int_source_volume(30, 100);
-  // TODO(dzen): make larger
-  std::uniform_real_distribution<> double_filter(0.5, 1);
+  std::uniform_int_distribution<> int_size(params.get_graph_size().min,
+                                           params.get_graph_size().max);
+  std::uniform_int_distribution<> int_source_volume(
+      params.get_source_volume().min, params.get_source_volume().max);
+  std::uniform_real_distribution<> double_filter(
+      params.get_filter_volume().min, params.get_filter_volume().max);
 
   const int total_size = int_size(gen);
   const int sources_size = std::max(1, total_size / 10);
@@ -57,21 +64,8 @@ yql_model::Graph GenerateGraph() {
 
   while (remaining_size > 0) {
     std::uniform_int_distribution<> layer_count(1, std::min(5, remaining_size));
-    // std::uniform_int_distribution<> parent_count(
-    //     1, static_cast<int>(prev_layer.size()));
 
-    // std::vector<std::size_t> parents(parent_count(gen));
     const std::vector<std::size_t> parents(prev_layer);
-    // std::unordered_set<int> used_parents;
-
-    // for (auto& parent : parents) {
-    //   int par = parent_count(gen) - 1;
-    //   while (used_parents.contains(par)) {
-    //     par = parent_count(gen) - 1;
-    //   }
-    //   used_parents.emplace(par);
-    //   parent = prev_layer[par];
-    // }
 
     const int layer = layer_count(gen);
     prev_layer.clear();
@@ -107,11 +101,19 @@ void server_thread(std::shared_ptr<yql_model::System> system) {  // NOLINT
   simple_http_server::Server server("127.0.0.1", 8080);
 
   server.MapUrl(
-      "/test",
-      [system](const simple_http_server::Request&) {
+      "/api/params",
+      [system](const simple_http_server::Request& request) {
+        if (request.GetType() == simple_http_server::Request::GET) {
+          return simple_http_server::Response(
+              simple_http_server::Response::HttpStatusCodes::OK,
+              params.ToJson(), {{"Content-Type", "application/json"}});
+        }
+        if (request.GetType() == simple_http_server::Request::POST) {
+          params.Update(request.GetArguments());
+          return simple_http_server::Response(simple_http_server::Response::OK);
+        }
         return simple_http_server::Response(
-            simple_http_server::Response::HttpStatusCodes::OK,
-            "Hello world in plain text");
+            simple_http_server::Response::NOT_FOUND);
       },
       true);
 
@@ -120,30 +122,10 @@ void server_thread(std::shared_ptr<yql_model::System> system) {  // NOLINT
       [system](const simple_http_server::Request&) {
         std::ostringstream res;
 
-        // std::size_t server_id = 0;
         res << '[';
         for (const auto& server : system->GetServers()) {
-          // res << '{';
-          // // res << server_id++ << "<br>";
-          // for (const auto& stat :
-          //      std::initializer_list<std::tuple<std::string, double,
-          //      double>>{
-          //          {"cpu", server.GetCpuUsage(), server.GetCpuLimit()},
-          //          {"memory", server.GetMemoryUsage(),
-          //          server.GetMemoryLimit()},
-          //          {"network", server.GetNetworkUsage(),
-          //           server.GetNetworkLimit()}}) {
-          //   res << '"' << std::get<0>(stat) << R"(":{"usage":)"
-          //       << std::get<1>(stat) << R"(,"limit":)" << std::get<2>(stat)
-          //       << "},";
-          //   // << " <progress value='"
-          //   //     << std::get<1>(stat) / std::get<2>(stat) <<
-          //   //     "'></progress><br>";
-          // }
-          // res.seekp(-1, std::ios_base::cur);
-          // res << "},";
-          res << R"({"usage":)" << server.GetUsages().ToJSON()
-              << R"(,"limits":)" << server.GetLimits().ToJSON() << "},";
+          res << R"({"usage":)" << server.GetUsages().ToJson()
+              << R"(,"limits":)" << server.GetLimits().ToJson() << "},";
         }
         res.seekp(-1, std::ios_base::cur);
         res << "]";
@@ -163,7 +145,7 @@ void server_thread(std::shared_ptr<yql_model::System> system) {  // NOLINT
         res << '[';
         for (const auto& [ind, stats] :
              system->GetServerById(server_id).GetNodes()) {
-          res << R"({"id":)" << ind << R"(,"usage":)" << stats.ToJSON() << "},";
+          res << R"({"id":)" << ind << R"(,"usage":)" << stats.ToJson() << "},";
         }
         res.seekp(-1, std::ios_base::cur);
         res << ']';
@@ -241,11 +223,17 @@ int main() {
     auto system = std::make_shared<yql_model::System>(
         std::make_unique<yql_model::RoundRobin>());
 
-    system
-        ->AddServer(yql_model::Server(
-            Stats({.cpu = 34 * 100, .memory = 100 * 1000, .network = 10000})))
-        ->AddServer(yql_model::Server(
-            Stats({.cpu = 34 * 100, .memory = 100 * 1000, .network = 10000})));
+    // system->AddServer(yql_model::Server(params.GetServerStat()))
+    //     ->AddServer(yql_model::Server(
+    //         Stats({.cpu = 34 * 100, .memory = 100 * 1000, .network =
+    //         10000})));
+
+    auto servers_count = params.get_servers_count();
+    auto server_stat = params.get_servers_stat();
+
+    for (int i = 0; i < servers_count; ++i) {
+      system->AddServer(yql_model::Server(server_stat));
+    }
 
     // const auto metrics = yql_model::Metrics(system);
     //

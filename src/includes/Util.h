@@ -1,62 +1,53 @@
 #ifndef SRC_INCLUDES_UTIL_H_
 #define SRC_INCLUDES_UTIL_H_
 
-#include <cstddef>
+#include <cstdlib>
+#include <iostream>
+#include <string>
 
 namespace yql_model {
-// NOLINTBEGIN(readability-magic-numbers)
-// NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
-namespace Literals {
-constexpr std::size_t operator"" _KiB(unsigned long long int val) {
-  return 8 * 1024ULL * val;
-}
+class Util {
+ public:
+  static std::string ToJsonValue(const int& value) {
+    return std::to_string(value);
+  }
 
-constexpr std::size_t operator"" _MiB(unsigned long long int val) {
-  return 1024_KiB * val;
-}
+  static std::string ToJsonValue(const double& value) {
+    return std::to_string(value);
+  }
 
-constexpr std::size_t operator"" _GiB(unsigned long long int val) {
-  return 1024_MiB * val;
-}
+  template <typename T>
+  static std::string ToJsonValue(const T& value) {
+    return value.ToJson();
+  }
 
-constexpr std::size_t operator"" _TiB(unsigned long long int val) {
-  return 1024_GiB * val;
-}
+  template <typename T>
+  static T ParseValue(const std::string& value) {
+    if constexpr (std::is_same_v<T, int>) {
+      return std::stoi(value);
+    } else if constexpr (std::is_same_v<T, double>) {
+      std::cerr << "double: #" << value << "#\n";
+      return std::stod(value);
+    } else {
+      return T::Parse(value);
+    }
+  }
 
-constexpr std::size_t operator"" _KB(unsigned long long int val) {
-  return 8 * 1000ULL * val;
-}
+  static void ParseValue(const std::string& value, int& ret) {
+    ret = std::stoi(value);
+  }
 
-constexpr std::size_t operator"" _MB(unsigned long long int val) {
-  return 1000_KB * val;
-}
+  static void ParseValue(const std::string& value, double& ret) {
+    ret = std::stod(value);
+  }
 
-constexpr std::size_t operator"" _GB(unsigned long long int val) {
-  return 1000_MB * val;
-}
+  template <typename T>
+  static void ParseValue(const std::string& value, T& ret) {
+    ret = T::Parse(value);
+  }
 
-constexpr std::size_t operator"" _TB(unsigned long long int val) {
-  return 1000_GB * val;
-}
-
-constexpr std::size_t operator"" _Kb(unsigned long long int val) {
-  return 1000ULL * val;
-}
-
-constexpr std::size_t operator"" _Mb(unsigned long long int val) {
-  return 1000_KB * val;
-}
-
-constexpr std::size_t operator"" _Gb(unsigned long long int val) {
-  return 1000_MB * val;
-}
-
-constexpr std::size_t operator"" _Tb(unsigned long long int val) {
-  return 1000_GB * val;
-}
-}  // namespace Literals
-// NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
-// NOLINTEND(readability-magic-numbers)
+  static constexpr std::string delimeter = ",";
+};
 }  // namespace yql_model
 
 #endif  // SRC_INCLUDES_UTIL_H_
