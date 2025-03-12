@@ -13,7 +13,25 @@ namespace yql_model {
 
 class Graph {
  public:
+  struct Link {
+    std::size_t id = 0;
+    std::size_t volume = 0;
+  };
+  struct FullLink {
+    std::size_t source_id;
+    std::size_t destination_id;
+    std::size_t volume;
+  };
   explicit Graph(std::size_t size);
+
+  Graph(const Graph& source) = default;
+
+  Graph(Graph&& source) = default;
+
+  Graph& operator=(const Graph& source) = default;
+  Graph& operator=(Graph&& source) = default;
+
+  ~Graph() = default;
 
   const std::shared_ptr<Node>& operator[](std::size_t idx) const {
     return nodes_[idx];
@@ -24,16 +42,17 @@ class Graph {
   [[nodiscard]] auto GetSources() const { return sources_; }
   [[nodiscard]] auto GetTotalUsage() const { return total_usage_; }
   [[nodiscard]] std::unordered_set<std::size_t> GetSinks() const;
-  [[nodiscard]] std::vector<std::pair<std::size_t, std::size_t>> GetEdgeList()
-      const;
+  [[nodiscard]] std::vector<FullLink> GetEdgeList() const;
 
   Graph* AddNode(std::unique_ptr<Node> node,
-                 const std::vector<std::size_t>& parents = {});
+                 const std::vector<Link>& parents = {});
 
   void CalculateThroughput();
 
+  [[nodiscard]] Graph GetCopy() const;
+
  private:
-  std::vector<std::vector<std::size_t>> adjacency_list_;
+  std::vector<std::vector<Link>> adjacency_list_;
   std::vector<std::shared_ptr<Node>> nodes_;
 
   std::size_t size_ = 0;

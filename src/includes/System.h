@@ -33,6 +33,10 @@ class System {
     return graphs_.size();
   }
 
+  [[nodiscard]] auto GetSchedulerName() const { return scheduler_->GetName(); }
+
+  void Tick();
+
   void Reset() {
     servers_.clear();
     graphs_.clear();

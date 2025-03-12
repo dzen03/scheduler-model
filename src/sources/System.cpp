@@ -36,4 +36,10 @@ bool System::RemoveQuery(std::size_t index) {
   return false;
 }
 
+void System::Tick() {
+  for (auto& graph : graphs_) {
+    // graph->MultiplyBy();
+  }
+}
+
 }  // namespace yql_model

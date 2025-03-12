@@ -59,8 +59,8 @@ class Parameters {
   std::vector<std::pair<std::string, std::function<std::string()>>> jsonParams_;
   // graph_generation
   DEFINE_PARAM(Range<int>, graph_size, {.min = 2, .max = 30});
-  DEFINE_PARAM(Range<int>, source_volume, {.min = 30, .max = 100});
-  DEFINE_PARAM(Range<double>, filter_volume, {.min = 0.5, .max = 1});
+  DEFINE_PARAM(Range<int>, source_volume, {.min = 100, .max = 500});
+  DEFINE_PARAM(Range<double>, filter_volume, {.min = 0.6, .max = 1});
 
   // server
   DEFINE_PARAM(int, servers_count, 3);

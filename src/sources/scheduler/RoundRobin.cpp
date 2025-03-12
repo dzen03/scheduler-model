@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "Graph.h"
@@ -50,5 +51,7 @@ bool RoundRobin::Remove(const Graph& graph, std::vector<Server>& servers) {
   }
   return true;
 }
+
+std::string RoundRobin::GetName() const { return "RoundRobin"; };
 
 }  // namespace yql_model

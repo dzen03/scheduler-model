@@ -36,6 +36,13 @@ class SourceNode : public Node {
                   .disk = 0});
   }
 
+  [[nodiscard]] std::shared_ptr<Node> GetCopy() const override {
+    auto res = std::make_shared<SourceNode>(this->rate_);
+    res->SetInputVolume(this->GetInputVolume());
+
+    return res;
+  }
+
  private:
   double rate_;
 };

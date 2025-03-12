@@ -35,6 +35,8 @@ class Server {
 
   void RemoveNode(std::size_t node_id);
 
+  void UpdateUsages(Stats new_usage) { usages_ = new_usage; }
+
  private:
   Stats limits_;
   Stats usages_ = Stats();

@@ -11,6 +11,8 @@ class SingleHost : public IScheduler {
   bool Schedule(const Graph& graph, std::vector<Server>& servers) override;
   bool Remove(const Graph& graph, std::vector<Server>& servers) override;
 
+  [[nodiscard]] std::string GetName() const override;
+
  private:
   std::size_t next_server_ = 0;
 };

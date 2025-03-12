@@ -18,7 +18,7 @@ Graph::Graph(std::size_t size) {
 }
 
 Graph* Graph::AddNode(std::unique_ptr<Node> node,
-                      const std::vector<std::size_t>& parents) {
+                      const std::vector<Link>& parents) {
   assert(size_ < nodes_.size());
   nodes_[size_] = std::move(node);
 
@@ -27,8 +27,9 @@ Graph* Graph::AddNode(std::unique_ptr<Node> node,
   }
 
   for (const auto& parent : parents) {
-    assert(parent < adjacency_list_.size());
-    adjacency_list_[parent].emplace_back(size_);
+    assert(parent.id < adjacency_list_.size());
+    adjacency_list_[parent.id].emplace_back(
+        Link{.id = size_, .volume = parent.volume});
   }
 
   ++size_;
@@ -60,8 +61,9 @@ void Graph::CalculateThroughput() {
     }
     visited[node_id] = true;
 
-    for (const auto& child_id : adjacency_list_[node_id]) {
-      nodes_[child_id]->AddInputVolume(nodes_[node_id]->GetOutputVolume());
+    for (const auto& [child_id, volume] : adjacency_list_[node_id]) {
+      nodes_[child_id]->AddInputVolume(nodes_[node_id]->GetOutputVolume() *
+                                       volume);
       queue.emplace(child_id);
     }
 
@@ -83,17 +85,33 @@ std::unordered_set<std::size_t> Graph::GetSinks() const {
   return res;
 }
 
-std::vector<std::pair<std::size_t, std::size_t>> Graph::GetEdgeList() const {
-  std::vector<std::pair<std::size_t, std::size_t>> res;
+std::vector<Graph::FullLink> Graph::GetEdgeList() const {
+  std::vector<FullLink> res;
   int ind = 0;
   for (const auto& row : adjacency_list_) {
-    for (const auto& val : row) {
+    for (const auto& [val, volume] : row) {
       // std::cout << ind << ">" << val << "\n";
-      res.emplace_back(nodes_[ind]->GetNodeId(), nodes_[val]->GetNodeId());
+      res.emplace_back(nodes_[ind]->GetNodeId(), nodes_[val]->GetNodeId(),
+                       volume);
     }
     // std::cout << "\n";
     ++ind;
   }
+  return res;
+}
+
+Graph Graph::GetCopy() const {
+  Graph res = Graph(this->size_);
+  res.adjacency_list_ = this->adjacency_list_;
+
+  res.sources_ = this->sources_;
+
+  res.total_usage_ = this->total_usage_;
+
+  for (const auto& node : this->nodes_) {
+    res.nodes_[res.size_++] = node->GetCopy();
+  }
+
   return res;
 }
 

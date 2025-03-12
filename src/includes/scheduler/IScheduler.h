@@ -24,6 +24,8 @@ class IScheduler {
 
   virtual bool Schedule(const Graph& graph, std::vector<Server>& servers) = 0;
   virtual bool Remove(const Graph& graph, std::vector<Server>& servers) = 0;
+
+  [[nodiscard]] virtual std::string GetName() const = 0;
 };
 }  // namespace yql_model
 

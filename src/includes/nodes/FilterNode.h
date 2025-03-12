@@ -1,6 +1,8 @@
 #ifndef SRC_INCLUDES_NODES_FILTERNODE_H_
 #define SRC_INCLUDES_NODES_FILTERNODE_H_
 
+#include <memory>
+
 #include "Node.h"
 #include "Stats.h"
 
@@ -34,6 +36,12 @@ class FilterNode : public Node {
                   .memory = GetInputVolume(),
                   .network = network_usage,
                   .disk = 0});
+  }
+  [[nodiscard]] std::shared_ptr<Node> GetCopy() const override {
+    auto res = std::make_shared<FilterNode>(this->filter_);
+    res->SetInputVolume(this->GetInputVolume());
+
+    return res;
   }
 
  private:

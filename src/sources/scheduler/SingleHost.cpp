@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <vector>
 
 #include "Graph.h"
@@ -56,4 +57,7 @@ bool SingleHost::Remove(const Graph& graph, std::vector<Server>& servers) {
   }
   return true;
 }
+
+std::string SingleHost::GetName() const { return "SingleHost"; };
+
 }  // namespace yql_model

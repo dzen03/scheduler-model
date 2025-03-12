@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 #include "Stats.h"
 
@@ -17,15 +18,16 @@ class Node {
   Node();
   virtual ~Node() = default;
 
-  Node(const Node& source) = default;
+  Node(const Node& source) = delete;
   Node(Node&& source) = default;
 
-  Node& operator=(const Node& source) = default;
+  Node& operator=(const Node& source) = delete;
   Node& operator=(Node&& source) = default;
 
   [[nodiscard]] virtual double GetOutputVolume() = 0;
   [[nodiscard]] virtual Stats GetUsage() = 0;
   [[nodiscard]] virtual Stats GetUsage(NetworkMode need_network) = 0;
+  [[nodiscard]] virtual std::shared_ptr<Node> GetCopy() const = 0;
 
   void SetInputVolume(double value) { input_ = value; }
   void AddInputVolume(double value) { SetInputVolume(input_ + value); }
