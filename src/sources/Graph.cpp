@@ -37,12 +37,13 @@ Graph* Graph::AddNode(std::unique_ptr<Node> node,
 }
 
 // TODO(dzen): add dynamic
-void Graph::CalculateThroughput() {
+void Graph::CalculateThroughput(bool dynamic) {
   for (std::size_t node_id = 0; node_id < size_; ++node_id) {
     // preserve input volumes of sources
     if (!sources_.contains(node_id)) {
       nodes_[node_id]->ResetInputVolume();
     }
+    nodes_[node_id]->ResetOutputVolume();
   }
 
   std::queue<std::size_t> queue;
@@ -62,8 +63,19 @@ void Graph::CalculateThroughput() {
     visited[node_id] = true;
 
     for (const auto& [child_id, volume] : adjacency_list_[node_id]) {
-      nodes_[child_id]->AddInputVolume(nodes_[node_id]->GetOutputVolume() *
-                                       volume);
+      if (!dynamic ||
+          nodes_[child_id]->GetServer() != nodes_[node_id]->GetServer()) {
+        nodes_[child_id]->AddInputVolume(
+            {.remote = nodes_[node_id]->GetOutputVolume() * volume});
+
+        nodes_[node_id]->AddOutputVolume(
+            {.remote = nodes_[node_id]->GetOutputVolume() * volume});
+      } else {
+        nodes_[child_id]->AddInputVolume(
+            {.local = nodes_[node_id]->GetOutputVolume() * volume});
+        nodes_[node_id]->AddOutputVolume(
+            {.local = nodes_[node_id]->GetOutputVolume() * volume});
+      }
       queue.emplace(child_id);
     }
 

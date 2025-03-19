@@ -11,6 +11,7 @@ namespace yql_model {
 class FilterNode : public Node {
  private:
   static constexpr double cpu_usage_multiplier_ = 0.05;
+  static constexpr double cpu_usage_multiplier_for_serialization_ = 0.03;
 
  public:
   explicit FilterNode(double filter = 1) : filter_(filter) {}
@@ -37,9 +38,20 @@ class FilterNode : public Node {
                   .network = network_usage,
                   .disk = 0});
   }
+  Stats GetTrueUsage() override {
+    const auto& input = GetInputVolume_();
+    const auto& output = GetOutputVolume_();
+    return Stats(
+        {.cpu = (cpu_usage_multiplier_ * input.local) +
+                (cpu_usage_multiplier_for_serialization_ * input.remote) +
+                (cpu_usage_multiplier_for_serialization_ * output.remote),
+         .memory = GetInputVolume(),
+         .network = input.remote + output.remote,
+         .disk = 0});
+  }
   [[nodiscard]] std::shared_ptr<Node> GetCopy() const override {
     auto res = std::make_shared<FilterNode>(this->filter_);
-    res->SetInputVolume(this->GetInputVolume());
+    res->SetInputVolume(this->GetInputVolume_());
 
     return res;
   }

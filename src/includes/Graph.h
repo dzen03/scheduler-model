@@ -15,12 +15,12 @@ class Graph {
  public:
   struct Link {
     std::size_t id = 0;
-    std::size_t volume = 0;
+    double volume = 0;
   };
   struct FullLink {
     std::size_t source_id;
     std::size_t destination_id;
-    std::size_t volume;
+    double volume;
   };
   explicit Graph(std::size_t size);
 
@@ -47,7 +47,7 @@ class Graph {
   Graph* AddNode(std::unique_ptr<Node> node,
                  const std::vector<Link>& parents = {});
 
-  void CalculateThroughput();
+  void CalculateThroughput(bool dynamic = false);
 
   [[nodiscard]] Graph GetCopy() const;
 

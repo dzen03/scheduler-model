@@ -9,9 +9,12 @@ namespace yql_model {
 class SourceNode : public Node {
  private:
   static constexpr double cpu_usage_multiplier_ = 0.02;
+  static constexpr double cpu_usage_multiplier_for_serialization_ = 0.03;
 
  public:
-  explicit SourceNode(double rate) : rate_(rate) { SetInputVolume(rate); }
+  explicit SourceNode(double rate) : rate_(rate) {
+    SetInputVolume({.local = 0, .remote = rate});
+  }
 
   double GetOutputVolume() override { return rate_; }
   Stats GetUsage() override { return GetUsage(BOTH); }
@@ -35,10 +38,21 @@ class SourceNode : public Node {
                   .network = network_usage,
                   .disk = 0});
   }
+  Stats GetTrueUsage() override {
+    const auto& input = GetInputVolume_();
+    const auto& output = GetOutputVolume_();
+    return Stats(
+        {.cpu = (cpu_usage_multiplier_ * input.local) +
+                (cpu_usage_multiplier_for_serialization_ * input.remote) +
+                (cpu_usage_multiplier_for_serialization_ * output.remote),
+         .memory = GetInputVolume(),
+         .network = input.remote + output.remote,
+         .disk = 0});
+  }
 
   [[nodiscard]] std::shared_ptr<Node> GetCopy() const override {
     auto res = std::make_shared<SourceNode>(this->rate_);
-    res->SetInputVolume(this->GetInputVolume());
+    res->SetInputVolume(this->GetInputVolume_());
 
     return res;
   }

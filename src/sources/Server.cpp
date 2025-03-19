@@ -16,7 +16,7 @@ bool Server::EmplaceNode(const std::shared_ptr<Node>& node,
   if (usages_ + node->GetUsage(need_network) <= limits_) {
     usages_ = usages_ + node->GetUsage(need_network);
     node->SetServer(server_id);
-    emplaced_nodes_.emplace(node->GetNodeId(), node->GetUsage(need_network));
+    emplaced_nodes_.emplace(node->GetNodeId(), node);
     res = true;
   }
 
@@ -37,10 +37,9 @@ bool Server::EmplaceNodes(const std::vector<std::shared_ptr<Node>>& nodes,
 
   if (usages_ + need_usage <= limits_) {
     usages_ = usages_ + need_usage;
-    for (int i = 0; i < nodes.size(); ++i) {
-      nodes[i]->SetServer(server_id);
-      emplaced_nodes_.emplace(nodes[i]->GetNodeId(),
-                              nodes[i]->GetUsage(need_networks[i]));
+    for (const auto& node : nodes) {
+      node->SetServer(server_id);
+      emplaced_nodes_.emplace(node->GetNodeId(), node);
     }
     res = true;
   }
@@ -48,9 +47,19 @@ bool Server::EmplaceNodes(const std::vector<std::shared_ptr<Node>>& nodes,
   return res;
 }
 
+void Server::SyncNodesUsage() {
+  auto new_usage = Stats();
+
+  for (const auto& node : emplaced_nodes_) {
+    new_usage = new_usage + node.second->GetTrueUsage();
+  }
+
+  usages_ = new_usage;
+}
+
 void Server::RemoveNode(std::size_t node_id) {
   assert(emplaced_nodes_.contains(node_id));
-  usages_ = usages_ - emplaced_nodes_.at(node_id);
+  usages_ = usages_ - emplaced_nodes_.at(node_id)->GetUsage();
   emplaced_nodes_.erase(node_id);
 }
 }  // namespace yql_model

@@ -39,6 +39,11 @@ bool System::RemoveQuery(std::size_t index) {
 void System::Tick() {
   for (auto& graph : graphs_) {
     // graph->MultiplyBy();
+    // TODO(dzen): implement
+    graph.CalculateThroughput(true);
+  }
+  for (auto& server : servers_) {
+    server.SyncNodesUsage();
   }
 }
 

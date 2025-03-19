@@ -12,8 +12,11 @@ namespace yql_model {
 
 class Node {
  public:
-  enum Type : std::uint8_t { SOURCE, FILTER };
   enum NetworkMode : std::uint8_t { NONE, INPUT, OUTPUT, BOTH };
+  struct Volume {
+    double local;
+    double remote;
+  };
 
   Node();
   virtual ~Node() = default;
@@ -29,10 +32,24 @@ class Node {
   [[nodiscard]] virtual Stats GetUsage(NetworkMode need_network) = 0;
   [[nodiscard]] virtual std::shared_ptr<Node> GetCopy() const = 0;
 
-  void SetInputVolume(double value) { input_ = value; }
-  void AddInputVolume(double value) { SetInputVolume(input_ + value); }
-  void ResetInputVolume() { SetInputVolume(0); }
-  [[nodiscard]] auto GetInputVolume() const { return input_; }
+  [[nodiscard]] virtual Stats GetTrueUsage() = 0;
+
+  void SetOutputVolume(Volume value) { output_ = value; }
+  void AddOutputVolume(Volume value) {
+    SetOutputVolume({.local = output_.local + value.local,
+                     .remote = output_.remote + value.remote});
+  }
+  void ResetOutputVolume() { SetOutputVolume({.local = 0, .remote = 0}); }
+
+  void SetInputVolume(Volume value) { input_ = value; }
+  void AddInputVolume(Volume value) {
+    SetInputVolume({.local = input_.local + value.local,
+                    .remote = input_.remote + value.remote});
+  }
+  void ResetInputVolume() { SetInputVolume({.local = 0, .remote = 0}); }
+  [[nodiscard]] auto GetInputVolume() const {
+    return input_.remote + input_.local;
+  }
 
   void SetServer(std::size_t server_id) {
     assert(server_id == std::size_t(-1) || server_id_ == std::size_t(-1));
@@ -42,8 +59,12 @@ class Node {
 
   [[nodiscard]] auto GetNodeId() const { return node_id_; }
 
+  [[nodiscard]] auto GetInputVolume_() const { return input_; }
+  [[nodiscard]] auto GetOutputVolume_() const { return output_; }
+
  private:
-  double input_ = 0;
+  Volume input_ = {.local = 0, .remote = 0};
+  Volume output_ = {.local = 0, .remote = 0};
   std::size_t server_id_ = -1;
   std::size_t node_id_;
 };

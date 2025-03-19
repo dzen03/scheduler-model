@@ -33,6 +33,8 @@ class Server {
                     const std::vector<Node::NetworkMode>& need_networks,
                     std::size_t server_id);
 
+  void SyncNodesUsage();
+
   void RemoveNode(std::size_t node_id);
 
   void UpdateUsages(Stats new_usage) { usages_ = new_usage; }
@@ -40,7 +42,7 @@ class Server {
  private:
   Stats limits_;
   Stats usages_ = Stats();
-  std::unordered_map<std::size_t, Stats> emplaced_nodes_;
+  std::unordered_map<std::size_t, std::shared_ptr<Node>> emplaced_nodes_;
 };
 
 }  // namespace yql_model

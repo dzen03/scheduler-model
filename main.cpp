@@ -175,7 +175,7 @@ void server_thread(std::vector<std::shared_ptr<yql_model::System>>& systems) {
   server.MapUrl(
       "/api/params",
       // NOLINTNEXTLINE
-      [](const simple_http_server::Request& request) noexcept(false) {
+      [&systems](const simple_http_server::Request& request) noexcept(false) {
         if (request.GetType() == simple_http_server::Request::GET) {
           return simple_http_server::Response(
               simple_http_server::Response::HttpStatusCodes::OK,
@@ -183,6 +183,7 @@ void server_thread(std::vector<std::shared_ptr<yql_model::System>>& systems) {
         }
         if (request.GetType() == simple_http_server::Request::POST) {
           params.Update(request.GetArguments());
+          systems = init();
           return simple_http_server::Response(simple_http_server::Response::OK);
         }
         return simple_http_server::Response(
