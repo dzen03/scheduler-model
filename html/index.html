@@ -14,9 +14,17 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
-  <a class="btn btn-primary" href="graph.html">Graph</a>
+  <a class="btn btn-primary" href="graph.html">Go to graphs view</a>
   <div class="row">
-    <div class="col-6" id="server-root"></div>
+    <div class="col-6">
+      <table id="server-table" class="table">
+      </table>
+      <a class="btn btn-primary" data-bs-toggle="collapse" href="#server-root" role="button" aria-expanded="false"
+        aria-controls="server-root">
+        Toggle detailed view
+      </a>
+      <div id="server-root" class="collapse"></div>
+    </div>
     <div class="col-6">
 
       <input id="count" type="number" />
@@ -72,7 +80,13 @@
           <input type="number" id="server_disk" name="servers_stat[disk]">
         </fieldset>
 
-        <button type="button" onclick="submitFormData()" class="btn btn-danger">Submit with reset</button>
+        <fieldset>
+          <legend>Max count to emplace locally</legend>
+          <label for="max_count_local">Count:</label>
+          <input type="number" id="max_count_local" name="max_count_local">
+        </fieldset>
+
+        <button type="button" onclick="submitFormData()" class="btn btn-primary">Submit</button>
       </form>
     </div>
   </div>

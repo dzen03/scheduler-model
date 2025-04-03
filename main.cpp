@@ -27,6 +27,7 @@
 #include "System.h"
 #include "nodes/FilterNode.h"
 #include "nodes/SourceNode.h"
+#include "scheduler/New.h"
 #include "scheduler/RoundRobin.h"
 #include "scheduler/SingleHost.h"
 #include "server/libs/includes/Request.h"
@@ -36,17 +37,17 @@
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers)
 namespace {
 
-yql_model::Parameters params{};  // NOLINT
+auto params = std::make_shared<yql_model::Parameters>();  // NOLINT
 
 yql_model::Graph GenerateGraph() {
   std::random_device rand;
   std::mt19937 gen(rand());
-  std::uniform_int_distribution<> int_size(params.get_graph_size().min,
-                                           params.get_graph_size().max);
+  std::uniform_int_distribution<> int_size(params->get_graph_size().min,
+                                           params->get_graph_size().max);
   std::uniform_int_distribution<> int_source_volume(
-      params.get_source_volume().min, params.get_source_volume().max);
+      params->get_source_volume().min, params->get_source_volume().max);
   std::uniform_real_distribution<> double_filter(
-      params.get_filter_volume().min, params.get_filter_volume().max);
+      params->get_filter_volume().min, params->get_filter_volume().max);
 
   const int total_size = int_size(gen);
   const int sources_size = std::max(1, total_size / 10);
@@ -135,10 +136,12 @@ auto init() {
       std::make_shared<yql_model::System>(
           std::make_unique<yql_model::SingleHost>()),
       std::make_shared<yql_model::System>(
-          std::make_unique<yql_model::RoundRobin>())};
+          std::make_unique<yql_model::RoundRobin>()),
+      std::make_shared<yql_model::System>(
+          std::make_unique<yql_model::New>(params))};
 
-  const auto& servers_count = params.get_servers_count();
-  const auto& server_stat = params.get_servers_stat();
+  const auto& servers_count = params->get_servers_count();
+  const auto& server_stat = params->get_servers_stat();
 
   for (auto& system : systems) {
     for (int i = 0; i < servers_count; ++i) {
@@ -179,11 +182,14 @@ void server_thread(std::vector<std::shared_ptr<yql_model::System>>& systems) {
         if (request.GetType() == simple_http_server::Request::GET) {
           return simple_http_server::Response(
               simple_http_server::Response::HttpStatusCodes::OK,
-              params.ToJson(), {{"Content-Type", "application/json"}});
+              params->ToJson(), {{"Content-Type", "application/json"}});
         }
         if (request.GetType() == simple_http_server::Request::POST) {
-          params.Update(request.GetArguments());
-          systems = init();
+          params->Update(request.GetArguments());
+          // systems = init();
+          for (const auto& system : systems) {
+            system->ReexecuteAll();
+          }
           return simple_http_server::Response(simple_http_server::Response::OK);
         }
         return simple_http_server::Response(

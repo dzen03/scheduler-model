@@ -6,6 +6,8 @@
 #include <mutex>
 #include <shared_mutex>
 #include <sstream>
+#include <stdexcept>
+#include <string>
 
 #include "Stats.h"
 #include "Util.h"
@@ -68,6 +70,8 @@ class Parameters {
       Stats, servers_stat,
       Stats({.cpu = 34 * 100, .memory = 100 * 1000, .network = 10000}));
 
+  DEFINE_PARAM(int, max_count_local, 5);
+
  public:
   std::string ToJson() const {
     const std::shared_lock lock(mutex_);
@@ -100,15 +104,17 @@ class Parameters {
       } else if (param == "servers_stat") {
         Util::ParseValue(value_str, servers_stat_);
         std::cout << servers_stat_.ToJson();
+      } else if (param == "max_count_local") {
+        Util::ParseValue(value_str, max_count_local_);
       } else {
-        std::cerr << "unknown param: " << param;
+        std::cerr << "unknown param: " << param << '\n';
+        throw std::runtime_error("unknown param: " + param);
       }
     }
   }
 };
 // NOLINTEND(cppcoreguidelines-avoid-magic-numbers)
 // NOLINTEND(readability-magic-numbers)
-
 };  // namespace yql_model
 
 #endif  // SRC_INCLUDES_PARAMETERS_H

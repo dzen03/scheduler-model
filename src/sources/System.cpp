@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "Graph.h"
 #include "Server.h"
@@ -34,6 +35,16 @@ bool System::RemoveQuery(std::size_t index) {
     return true;
   }
   return false;
+}
+
+void System::ReexecuteAll() {
+  const auto graphs = std::vector<Graph>(graphs_.begin(), graphs_.end());
+  for (std::size_t i = graphs_.size(); (i--) != 0;) {
+    RemoveQuery(i);
+  }
+  for (const auto& graph : graphs) {
+    ExecuteQuery(graph);
+  }
 }
 
 void System::Tick() {

@@ -37,6 +37,8 @@ class System {
 
   void Tick();
 
+  void ReexecuteAll();
+
   void Reset() {
     servers_.clear();
     graphs_.clear();
