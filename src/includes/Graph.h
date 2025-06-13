@@ -16,11 +16,13 @@ class Graph {
   struct Link {
     std::size_t id = 0;
     double volume = 0;
+    double size = 0;
   };
   struct FullLink {
     std::size_t source_id;
     std::size_t destination_id;
     double volume;
+    double size;
   };
   explicit Graph(std::size_t size);
 
@@ -43,6 +45,7 @@ class Graph {
   [[nodiscard]] auto GetTotalUsage() const { return total_usage_; }
   [[nodiscard]] std::unordered_set<std::size_t> GetSinks() const;
   [[nodiscard]] std::vector<FullLink> GetEdgeList() const;
+  [[nodiscard]] auto GetAdjacencyList() const { return adjacency_list_; }
 
   Graph* AddNode(std::unique_ptr<Node> node,
                  const std::vector<Link>& parents = {});

@@ -1,0 +1,14 @@
+compilation_database_dir: build
+output_directory: diagrams
+diagrams:
+  yql_model:
+    type: include
+    glob:
+      - ./src/**/*.cpp
+    using_namespace: yql_model
+    include:
+      namespaces:
+        - yql_model
+      access:
+        - public
+

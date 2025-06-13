@@ -62,7 +62,7 @@ void Graph::CalculateThroughput(bool dynamic) {
     }
     visited[node_id] = true;
 
-    for (const auto& [child_id, volume] : adjacency_list_[node_id]) {
+    for (auto& [child_id, volume, size] : adjacency_list_[node_id]) {
       if (!dynamic ||
           nodes_[child_id]->GetServer() != nodes_[node_id]->GetServer()) {
         nodes_[child_id]->AddInputVolume(
@@ -70,11 +70,14 @@ void Graph::CalculateThroughput(bool dynamic) {
 
         nodes_[node_id]->AddOutputVolume(
             {.remote = nodes_[node_id]->GetOutputVolume() * volume});
+
+        size = nodes_[node_id]->GetOutputVolume() * volume;
       } else {
         nodes_[child_id]->AddInputVolume(
             {.local = nodes_[node_id]->GetOutputVolume() * volume});
         nodes_[node_id]->AddOutputVolume(
             {.local = nodes_[node_id]->GetOutputVolume() * volume});
+        size = nodes_[node_id]->GetOutputVolume() * volume;
       }
       queue.emplace(child_id);
     }
@@ -101,10 +104,10 @@ std::vector<Graph::FullLink> Graph::GetEdgeList() const {
   std::vector<FullLink> res;
   int ind = 0;
   for (const auto& row : adjacency_list_) {
-    for (const auto& [val, volume] : row) {
+    for (const auto& [val, volume, size] : row) {
       // std::cout << ind << ">" << val << "\n";
       res.emplace_back(nodes_[ind]->GetNodeId(), nodes_[val]->GetNodeId(),
-                       volume);
+                       volume, size);
     }
     // std::cout << "\n";
     ++ind;

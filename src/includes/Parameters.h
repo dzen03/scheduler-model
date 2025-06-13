@@ -65,12 +65,13 @@ class Parameters {
   DEFINE_PARAM(Range<double>, filter_volume, {.min = 0.6, .max = 1});
 
   // server
-  DEFINE_PARAM(int, servers_count, 3);
+  DEFINE_PARAM(int, servers_count, 10);
   DEFINE_PARAM(
       Stats, servers_stat,
       Stats({.cpu = 34 * 100, .memory = 100 * 1000, .network = 10000}));
 
-  DEFINE_PARAM(int, max_count_local, 5);
+  DEFINE_PARAM(int, max_count_local, 1);
+  DEFINE_PARAM(int, max_distributed_traffic, 50);
 
  public:
   std::string ToJson() const {

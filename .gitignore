@@ -4,5 +4,7 @@ build/
 temp/
 notes.md
 data/
+diagrams/
+.idea/
 log.txt
 server.log

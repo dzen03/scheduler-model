@@ -320,10 +320,10 @@ int main() {
         for (const auto& system : systems) {
           system->Tick();
         }
-        const auto end = std::chrono::steady_clock::now();
+        // const auto end = std::chrono::steady_clock::now();
         using namespace std::chrono_literals;
-        std::cerr << 1000. / ((end - start) / 1.ms) << "\n";  //  NOLINT
-        std::this_thread::sleep_until(start + 50ms);          //  NOLINT
+        // std::cerr << 1000. / ((end - start) / 1.ms) << "\n";  //  NOLINT
+        std::this_thread::sleep_until(start + 50ms);  //  NOLINT
       } catch (std::exception& exc) {
         std::cerr << exc.what() << "\n";
       }

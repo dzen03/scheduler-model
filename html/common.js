@@ -34,10 +34,10 @@ function fetchGraphs() {
 function fetchServers() {
     fetch('/api/servers')
         .then(res => res.json()).then(data => {
-            var table = '<thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">cpu</th><th scope="col">memory</th><th scope="col">network</th><th scope="col">disk</th></tr></thead><tbody>';
+      var table = '<thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">cpu</th><th scope="col">memory</th><th scope="col">network</th><!--<th scope="col">disk</th>--></tr></thead><tbody>';
             document.getElementById('server-root').innerHTML = '';
             console.log(data);
-            const stats = ['cpu', 'memory', 'network', 'disk'];
+            const stats = ['cpu', 'memory', 'network'/*, 'disk'*/];
             for (const system in data) {
                 var top = document.createElement('p');
                 top.innerHTML = "<h3>" + data[system]['name'] + ":</h3>";
@@ -104,6 +104,8 @@ function fetchFormData() {
             
             document.getElementById('max_count_local').value = data.max_count_local;
 
+            document.getElementById('max_distributed_traffic').value = data.max_distributed_traffic;
+
         });
 }
 
@@ -115,6 +117,7 @@ function submitFormData() {
         `servers_count=${ document.getElementById('servers_count').value}`,
         `servers_stat=${document.getElementById('server_cpu').value},${document.getElementById('server_memory').value},${document.getElementById('server_network').value},${document.getElementById('server_disk').value}`,
         `max_count_local=${document.getElementById('max_count_local').value}`
+        `max_distributed_traffic=${document.getElementById('max_distributed_traffic').value}`
     ].join('&');
     fetch(`/api/params?${queryParams}`, {
         method: "POST"
